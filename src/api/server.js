@@ -491,6 +491,36 @@ app.get('/api/odds/status', async (req, res) => {
 });
 
 // =============================================
+// UPCOMING MATCHES (for frontend)
+// =============================================
+
+app.get('/api/upcoming-matches', async (req, res) => {
+  try {
+    // Use the same logic as Telegram predictions
+    const { fetchUpcomingMatches, getPrediction } = await import('../../telegram-predictions.js');
+    
+    const matchesData = await fetchUpcomingMatches();
+    const predictions = [];
+    
+    for (const match of matchesData) {
+      const pred = await getPrediction(match);
+      if (pred) {
+        predictions.push(pred);
+      }
+    }
+    
+    res.json({ 
+      matches: predictions,
+      count: predictions.length,
+      timestamp: new Date().toISOString()
+    });
+  } catch (err) {
+    console.error('Error fetching upcoming matches:', err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// =============================================
 // START SERVER
 // =============================================
 
